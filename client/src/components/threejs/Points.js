@@ -5,7 +5,6 @@ function Points(scene) {
 
     var geometry = new THREE.BufferGeometry();
 
-
     // create a generic buffer of binary data (a single particle has 16 bytes of data)
     var arrayBuffer = new ArrayBuffer(particles * 16);
 
@@ -49,7 +48,12 @@ function Points(scene) {
     geometry.addAttribute('color', new THREE.InterleavedBufferAttribute(interleavedBuffer8, 3, 12, true));
 
 
-    var material = new THREE.PointsMaterial({ size: 15, vertexColors: THREE.VertexColors });
+    var material = new THREE.PointsMaterial(
+        { 
+            size: 15, 
+            vertexColors: THREE.VertexColors 
+        }
+    );
 
     let points = new THREE.Points(geometry, material);
     scene.add(points);

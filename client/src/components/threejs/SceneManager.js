@@ -2,6 +2,8 @@ import * as THREE from 'three';
 import MainCube from "./MainCube";
 import Gridlines from "./Gridlines";
 import Points from "./Points";
+import Sphere from "./Sphere";
+import PointCube from "./PointCube";
 
 var OrbitControls = require('three-orbit-controls')(THREE)
 
@@ -32,7 +34,9 @@ export default canvas => {
             // new GeneralLights(scene),
             // new MainCube(scene),
             new Gridlines(scene),
-            new Points(scene)
+            // new Points(scene)
+            new Sphere(scene)
+            // new PointCube(scene)
         ];
 
         return sceneSubjects;
@@ -79,7 +83,7 @@ export default canvas => {
         controls.dampingFactor = 0.25;
         controls.screenSpacePanning = false;
         controls.minDistance = 2;
-        controls.maxDistance = 150;
+        controls.maxDistance = 1000;
         controls.maxPolarAngle = Math.PI / 2;
 
         return controls;
