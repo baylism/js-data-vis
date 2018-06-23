@@ -1,6 +1,9 @@
 import * as THREE from 'three';
 import MainCube from "./MainCube";
 import Gridlines from "./Gridlines";
+import Points from "./Points";
+
+var OrbitControls = require('three-orbit-controls')(THREE)
 
 
 export default canvas => {
@@ -22,6 +25,18 @@ export default canvas => {
     const renderer = buildRender(screenDimensions);
     const camera = buildCamera(screenDimensions);
     const sceneSubjects = createSceneSubjects(scene);
+    const controls = buildControls(camera);
+
+    function createSceneSubjects(scene) {
+        const sceneSubjects = [
+            // new GeneralLights(scene),
+            // new MainCube(scene),
+            new Gridlines(scene),
+            new Points(scene)
+        ];
+
+        return sceneSubjects;
+    }
 
     function buildScene() {
         const scene = new THREE.Scene();
@@ -47,7 +62,7 @@ export default canvas => {
         const aspectRatio = width / height;
         const fieldOfView = 60;
         const nearPlane = 4;
-        const farPlane = 100; 
+        const farPlane = 200; 
         const camera = new THREE.PerspectiveCamera(fieldOfView, aspectRatio, nearPlane, farPlane);
 
         camera.position.y = 100;
@@ -56,16 +71,11 @@ export default canvas => {
         return camera;
     }
 
-    function createSceneSubjects(scene) {
-        const sceneSubjects = [
-            // new GeneralLights(scene),
-            new MainCube(scene),
-            new Gridlines(scene)
-        ];
+    function buildControls(camera) {
+        const controls = new OrbitControls(camera)
 
-        return sceneSubjects;
+        return controls;
     }
-
 
     function update() {
         const elapsedTime = clock.getElapsedTime();
@@ -74,7 +84,7 @@ export default canvas => {
         for(let i=0; i<sceneSubjects.length; i++)
             sceneSubjects[i].update(elapsedTime);
 
-        updateCameraPositionRelativeToMouse();
+        // updateCameraPositionRelativeToMouse();
 
         // call threejs render method
         renderer.render(scene, camera);

@@ -24,6 +24,7 @@
   "dependencies": {
     "react": "^16.4.1",
     "react-dom": "^16.4.1",
-    "three": "^0.93.0"
+    "three": "^0.93.0",
+    "three-orbit-controls": "^82.1.0"
   }
 }
