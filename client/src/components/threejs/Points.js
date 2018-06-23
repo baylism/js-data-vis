@@ -1,67 +1,58 @@
 import * as THREE from "three";
 
-function Points(scene) {
-    var particles = 5;
+class Points {
+    constructor(scene) {
+        let maxAmount = 10; // allocate typed array to maximum size needed
+        let numAdded = 0;
 
-    var geometry = new THREE.BufferGeometry();
+        let radius = 20; // to limit point positions
 
-    // create a generic buffer of binary data (a single particle has 16 bytes of data)
-    var arrayBuffer = new ArrayBuffer(particles * 16);
-
-
-    // the following typed arrays share the same buffer
-    var interleavedFloat32Buffer = new Float32Array(arrayBuffer);
-    var interleavedUint8Buffer = new Uint8Array(arrayBuffer);
+        let positions = new Float32Array(maxAmount * 3);
+        let colors = new Float32Array(maxAmount * 3);
+        let sizes = new Float32Array(maxAmount);
 
 
-    var color = new THREE.Color();
-    var n = 10, n2 = n / 2; // particles spread in the cube
-
-
-    for (var i = 0; i < interleavedFloat32Buffer.length; i += 4) {
-
-        // position (first 12 bytes)
-        var x = Math.random() * n - n2;
-        var y = Math.random() * n - n2;
-        var z = Math.random() * n - n2;
-
-        interleavedFloat32Buffer[i + 0] = x;
-        interleavedFloat32Buffer[i + 1] = y;
-        interleavedFloat32Buffer[i + 2] = z;
-   
-        // color (last 4 bytes)
-        var vx = (x / n) + 0.5;
-        var vy = (y / n) + 0.5;
-        var vz = (z / n) + 0.5;
-        color.setRGB(vx, vy, vz);
-        var j = (i + 3) * 4;
-        interleavedUint8Buffer[j + 0] = color.r * 255;
-        interleavedUint8Buffer[j + 1] = color.g * 255;
-        interleavedUint8Buffer[j + 2] = color.b * 255;
-        interleavedUint8Buffer[j + 3] = 0; // not needed
+        let color = new THREE.Color();
+        let vertex = new THREE.Vector3();
+        for (let i = 0; i < maxAmount; i++) {
+            // set positions
+            vertex.x = (Math.random() * 2 - 1) * radius;
+            vertex.y = (Math.random() * 2 - 1) * radius;
+            vertex.z = (Math.random() * 2 - 1) * radius;
+            vertex.toArray(positions, i * 3);
+            // set colours
+            color.setRGB(Math.random(), Math.random(), Math.random());
+            color.toArray(colors, i * 3);
+        }
+        // create geometry and add attributes
+        let geometry = new THREE.BufferGeometry();
+        geometry.addAttribute('position', new THREE.BufferAttribute(positions, 3));
+        geometry.addAttribute('color', new THREE.BufferAttribute(colors, 3));
+        geometry.computeBoundingSphere();
+        let material = new THREE.PointsMaterial({
+            size: 5,
+            vertexColors: THREE.VertexColors
+        });
+        let sphere = new THREE.Points(geometry, material);
+        scene.add(sphere);
+        this.update = function () {
+            // cube.rotation.x += 0.01;
+            // cube.rotation.y += 0.005;
+        };
     }
 
-    var interleavedBuffer32 = new THREE.InterleavedBuffer(interleavedFloat32Buffer, 4);
-    var interleavedBuffer8 = new THREE.InterleavedBuffer(interleavedUint8Buffer, 16);
+    addPoint(x, y, z, hexColour) {
+        let colour = new THREE.Color();
+        let vertex = new THREE.Vector3(x, y, z);
 
-    geometry.addAttribute('position', new THREE.InterleavedBufferAttribute(interleavedBuffer32, 3, 0, false));
-    geometry.addAttribute('color', new THREE.InterleavedBufferAttribute(interleavedBuffer8, 3, 12, true));
+        colour==undefined ? color.setRGB(Math.random(), Math.random(), Math.random()) : color.set(hexColour);
 
+        vertex.toArray(positions, (numAdded * 3))
+        color.toArray(colors, numAdded * 3);
 
-    var material = new THREE.PointsMaterial(
-        { 
-            size: 15, 
-            vertexColors: THREE.VertexColors 
-        }
-    );
+        numAdded += 1;
 
-    let points = new THREE.Points(geometry, material);
-    scene.add(points);
-
-
-    this.update = function () {
-        // cube.rotation.x += 0.01;
-        // cube.rotation.y += 0.005;
+        console.log("added point to index " + numAdded);
     }
 }
 

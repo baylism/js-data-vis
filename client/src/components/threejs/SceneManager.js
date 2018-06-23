@@ -1,8 +1,8 @@
 import * as THREE from 'three';
 import MainCube from "./MainCube";
 import Gridlines from "./Gridlines";
-import Points from "./Points";
-import Sphere from "./Sphere";
+import Points from "./PointsInterleaved";
+import Sphere from "./Points";
 import PointCube from "./PointCube";
 
 var OrbitControls = require('three-orbit-controls')(THREE)
