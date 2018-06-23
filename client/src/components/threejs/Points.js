@@ -2,57 +2,83 @@ import * as THREE from "three";
 
 class Points {
     constructor(scene) {
-        let maxAmount = 10; // allocate typed array to maximum size needed
-        let numAdded = 0;
+        this.maxAmount = 10; // pre-allocate typed arrays
+        this.numAdded = 0;
 
         let radius = 20; // to limit point positions
 
-        let positions = new Float32Array(maxAmount * 3);
-        let colors = new Float32Array(maxAmount * 3);
-        let sizes = new Float32Array(maxAmount);
+        this.positions = new Float32Array(this.maxAmount * 3);
+        this.colors = new Float32Array(this.maxAmount * 3);
 
-
-        let color = new THREE.Color();
-        let vertex = new THREE.Vector3();
-        for (let i = 0; i < maxAmount; i++) {
-            // set positions
-            vertex.x = (Math.random() * 2 - 1) * radius;
-            vertex.y = (Math.random() * 2 - 1) * radius;
-            vertex.z = (Math.random() * 2 - 1) * radius;
-            vertex.toArray(positions, i * 3);
-            // set colours
-            color.setRGB(Math.random(), Math.random(), Math.random());
-            color.toArray(colors, i * 3);
+        while ((this.numAdded < 1) && (this.numAdded < this.maxAmount)) {
+            // this.addPoint(Math.random() * 10, Math.random() * 10, Math.random() * 10, 0x03a0dd)
+            this.addPoint(10, 10, 10, 0x03a0dd)
         }
-        // create geometry and add attributes
+
+        // create geometry
         let geometry = new THREE.BufferGeometry();
-        geometry.addAttribute('position', new THREE.BufferAttribute(positions, 3));
-        geometry.addAttribute('color', new THREE.BufferAttribute(colors, 3));
+        geometry.addAttribute('position', new THREE.BufferAttribute(this.positions, 3));
+        geometry.addAttribute('color', new THREE.BufferAttribute(this.colors, 3));
         geometry.computeBoundingSphere();
+
+        // create materials
         let material = new THREE.PointsMaterial({
             size: 5,
             vertexColors: THREE.VertexColors
         });
-        let sphere = new THREE.Points(geometry, material);
-        scene.add(sphere);
+
+        // create pointcloud
+        this.points = new THREE.Points(geometry, material);
+        scene.add(this.points);
+
+        // TODO updates for this component
         this.update = function () {
-            // cube.rotation.x += 0.01;
-            // cube.rotation.y += 0.005;
+            // this.movePoint(0, 5, 5, 5);
+            // this.nudgePoint(0);
         };
     }
 
+    // TODO optimisations reusing same Color and Vector objects
     addPoint(x, y, z, hexColour) {
+        if (this.numAdded == this.maxAmount) {
+            console.log("Point buffer full, not adding point");
+            return;
+        }
+
         let colour = new THREE.Color();
         let vertex = new THREE.Vector3(x, y, z);
 
-        colour==undefined ? color.setRGB(Math.random(), Math.random(), Math.random()) : color.set(hexColour);
+        colour == undefined ? color.setRGB(Math.random(), Math.random(), Math.random()) : colour.set(hexColour);
 
-        vertex.toArray(positions, (numAdded * 3))
-        color.toArray(colors, numAdded * 3);
+        vertex.toArray(this.positions, (this.numAdded * 3))
+        colour.toArray(this.colors, this.numAdded * 3);
+        // console.log("added point to index " + this.numAdded);
 
-        numAdded += 1;
+        this.numAdded += 1;
+    }
 
-        console.log("added point to index " + numAdded);
+    movePoint(index, toX, toY, toZ) {
+
+        console.log("moving ")
+        this.points.geometry.attributes.position.needsUpdate = true;
+
+        // console.log(points.geometry.attributes.position.array)
+        this.points.geometry.getAttribute('position').setXYZ(index, toX, toY, toZ);
+    }
+
+    nudgePoint(index) {
+        let toX = this.points.geometry.getAttribute('position').getX(index);
+        let toY = this.points.geometry.getAttribute('position').getY(index);
+        let toZ = this.points.geometry.getAttribute('position').getZ(index);
+
+        toX += 0.01;
+        toY += 0.01;
+        toZ += 0.01;
+
+        // console.log("moving " + toX)
+        this.points.geometry.attributes.position.needsUpdate = true;
+
+        this.movePoint(index, toX, toY, toZ)
     }
 }
 
