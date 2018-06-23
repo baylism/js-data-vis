@@ -1,5 +1,6 @@
 import * as THREE from "three";
 
+// TODO shaders https://stackoverflow.com/questions/50025798/three-js-points-buffergeometry-rendering-point-as-circle
 class Points {
     constructor(scene) {
         this.maxAmount = 10; // pre-allocate typed arrays
