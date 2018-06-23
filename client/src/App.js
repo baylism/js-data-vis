@@ -20,12 +20,8 @@ class App extends Component {
     render() {
         return (
             <div>
-                <h1>The page</h1>
-
                 <div className="App" ref={element => this.threeRootElement = element}></div>
-
             </div>
-
         );
     }
 }

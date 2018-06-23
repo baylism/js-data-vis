@@ -1,6 +1,4 @@
 import * as THREE from 'three';
-import SceneSubject from './SceneSubject';
-import GeneralLights from './GeneralLights';
 import MainCube from "./MainCube";
 import Gridlines from "./Gridlines";
 
@@ -35,7 +33,6 @@ export default canvas => {
     function buildRender({ width, height }) {
         const renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: true });
 
-
         const DPR = window.devicePixelRatio ? window.devicePixelRatio : 1;
         renderer.setPixelRatio(DPR);
         renderer.setSize(width, height);
@@ -53,7 +50,7 @@ export default canvas => {
         const farPlane = 100; 
         const camera = new THREE.PerspectiveCamera(fieldOfView, aspectRatio, nearPlane, farPlane);
 
-        // camera.position.y = 100;
+        camera.position.y = 100;
         camera.position.z = 60;
 
         return camera;
