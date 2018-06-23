@@ -65,7 +65,7 @@ export default canvas => {
         const farPlane = 200; 
         const camera = new THREE.PerspectiveCamera(fieldOfView, aspectRatio, nearPlane, farPlane);
 
-        camera.position.y = 100;
+        camera.position.y = 60;
         camera.position.z = 60;
 
         return camera;
@@ -73,6 +73,14 @@ export default canvas => {
 
     function buildControls(camera) {
         const controls = new OrbitControls(camera)
+
+        controls.enableDamping = true; // an animation loop is required when either damping or auto-rotation are enabled
+
+        controls.dampingFactor = 0.25;
+        controls.screenSpacePanning = false;
+        controls.minDistance = 2;
+        controls.maxDistance = 150;
+        controls.maxPolarAngle = Math.PI / 2;
 
         return controls;
     }
@@ -85,6 +93,7 @@ export default canvas => {
             sceneSubjects[i].update(elapsedTime);
 
         // updateCameraPositionRelativeToMouse();
+        controls.update();
 
         // call threejs render method
         renderer.render(scene, camera);

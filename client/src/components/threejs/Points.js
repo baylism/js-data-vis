@@ -1,7 +1,7 @@
 import * as THREE from "three";
 
 function Points(scene) {
-    var particles = 50;
+    var particles = 5;
 
     var geometry = new THREE.BufferGeometry();
 
@@ -20,13 +20,16 @@ function Points(scene) {
 
 
     for (var i = 0; i < interleavedFloat32Buffer.length; i += 4) {
+
         // position (first 12 bytes)
         var x = Math.random() * n - n2;
         var y = Math.random() * n - n2;
         var z = Math.random() * n - n2;
+
         interleavedFloat32Buffer[i + 0] = x;
         interleavedFloat32Buffer[i + 1] = y;
         interleavedFloat32Buffer[i + 2] = z;
+   
         // color (last 4 bytes)
         var vx = (x / n) + 0.5;
         var vy = (y / n) + 0.5;
