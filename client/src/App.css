@@ -1,0 +1,71 @@
+.App {
+  text-align: center;
+    height: 100%;
+    width: 100%;
+}
+
+/*.App-logo {*/
+  /*animation: App-logo-spin infinite 20s linear;*/
+  /*height: 80px;*/
+/*}*/
+
+/*.App-header {*/
+  /*background-color: #222;*/
+  /*height: 150px;*/
+  /*padding: 20px;*/
+  /*color: white;*/
+/*}*/
+
+/*.App-title {*/
+  /*font-size: 1.5em;*/
+/*}*/
+
+/*.App-intro {*/
+  /*font-size: large;*/
+/*}*/
+
+/*@keyframes App-logo-spin {*/
+  /*from { transform: rotate(0deg); }*/
+  /*to { transform: rotate(360deg); }*/
+/*}*/
+
+
+/* desktop-x-small */
+@media all and (min-width: 0) and (max-width: 480px) {
+  .App {
+    height: 65vh;
+    width: 100%;
+  }
+}
+
+/* desktop-small */
+@media all and (min-width: 481px) and (max-width: 840px) {
+  .App {
+    height: 65vh;
+    width: 100%;
+  }
+}
+
+/* desktop-medium */
+@media all and (min-width: 841px) and (max-width: 1280px) {
+  .App {
+    height: 75vh;
+    width: 100%;
+  }
+}
+
+/* desktop-large */
+@media all and (min-width: 1281px) and (max-width: 1600px) {
+  .App {
+    height: 70vh;
+    width: 100%;
+  }
+}
+
+/* desktop-xlarge */
+@media all and (min-width: 1601px) {
+  .App {
+    height: 75vh;
+    width: 100%;
+  }
+}
