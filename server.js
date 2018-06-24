@@ -10,6 +10,7 @@ const express = require('express');
 const http = require('http');
 const WebSocket = require('ws');
 
+const defaultHandlers = require('./WSDefaultHanders');
 
 // use .env file for dev. TODO set environment vars properly in production
 if (process.env.NODE_ENV !== 'production') {
@@ -28,43 +29,7 @@ const server = http.createServer(app);
 const webSocketServer = new WebSocket.Server({ server });
 
 
-
 // ================== Websocket Handler Definitions ==================
-function handleLifecycle(webSocket) {
-  webSocket.on('error', (error) => {
-    console.log("Websocket connection error: " + error);
-  });
-
-  webSocket.on('close', (close) => {
-    console.log("Websocket closed: " + close);
-  });
-}
-
-// STRATEGY: use pings to handle dropped connections. The websocket spec dictates that all clients should respond to pings with a pong, so we don't need to implement anything in our client for this to work.
-function detectDrops(webSocketServer) {
-  function heartbeat() {
-    this.isAlive = true;
-  }
-
-  webSocketServer.on('connection', (webSocket) => {
-    webSocket.isAlive = true;
-    webSocket.on('pong', heartbeat);
-  });
-
-  const interval = setInterval(function ping() {
-    console.log("Pinging all clients to detect dropped connections");
-    webSocketServer.clients.forEach((webSocket) => {
-      if (webSocket.isAlive === false) {
-        console.log("Connection with " + webSocket + "lost, terminating.");
-        return webSocket.terminate();
-      }
-
-      webSocket.isAlive = false;
-      webSocket.ping(() => { });
-    });
-  }, 30000);
-}
-
 function sendMessage(webSocket) {
   webSocket.send('something', (error) => {
     if (! typeof error === "undefined") {
@@ -73,14 +38,8 @@ function sendMessage(webSocket) {
   });
 }
 
-function logReceived(webSocket) {
-  webSocket.on('message', (message) => {
-    console.log('received: %s', message);
-  });
-}
-
 function broadcastAll(webSocketServer, message) {
-  webSocketServer.clients.forEach( (client) => {
+  webSocketServer.clients.forEach((client) => {
     if (client.readyState === WebSocket.OPEN) {
       client.send(data);
     }
@@ -89,26 +48,20 @@ function broadcastAll(webSocketServer, message) {
 
 // ================== Handler Binding ==================
 
-detectDrops(webSocketServer);
+defaultHandlers.detectDrops(webSocketServer);
 
-// connection with a client established
 webSocketServer.on('connection', (webSocket) => {
 
-  handleLifecycle(webSocket);
-  logReceived(webSocket);
+  defaultHandlers.handleErrors(webSocket);
+  defaultHandlers.handleClose(webSocket);
+  defaultHandlers.logReceived(webSocket);
 
 });
-
 
 // setInterval( () => {broadcast("hi")}, 1000);
 
 
-
-
-
-
-
-// run the server
+// ================== Run Server ==================
 server.listen(process.env.SERVERPORT, () => {
   console.log("Server listening on port 5000")
 });
