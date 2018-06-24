@@ -4,9 +4,12 @@
  * b. https://api.tfl.gov.uk/Line/Mode/dlr
  */
 
+
+ // ================== Imports ==================
 const express = require('express');
 const http = require('http');
 const WebSocket = require('ws');
+
 
 // use .env file for dev. TODO set environment vars properly in production
 if (process.env.NODE_ENV !== 'production') {
@@ -14,78 +17,86 @@ if (process.env.NODE_ENV !== 'production') {
   require('dotenv').load();
 }
 
+// ================== Express Setup ==================
 // create an express 'app' - just a function that handles HTTP requests and responses
 const app = express();
-
-// const port = process.env.PORT || 5000;
 
 // http server - uses app as callback
 const server = http.createServer(app);
 
 // create a websocket server instance that uses our HTTP server
-const wss = new WebSocket.Server({ server });
+const webSocketServer = new WebSocket.Server({ server });
 
-// connection with a client established
-wss.on('connection', function connection(ws) {
 
-  // websocket lifecycle handling
-  ws.on('error', (error) => {
+
+// ================== Websocket Handler Definition ==================
+function buildLifecycleHandlers(webSocket) {
+  webSocket.on('error', (error) => {
     console.log("Websocket connection error: " + error);
   });
 
-  ws.on('close', (close) => {
+  webSocket.on('close', (close) => {
     console.log("Websocket closed: " + close);
   });
+}
+
+// ================== Handler Binding ==================
+// connection with a client established
+webSocketServer.on('connection', (webSocket) => {
+
+  buildLifecycleHandlers(webSocket);
 
   // try sending a message immediately after connection opened
-  ws.send('something', (error) => {
+  webSocket.send('something', (error) => {
     if (! typeof error === "undefined") {
       console.log("Error sending message " + error);
     }
   });
 
   // message handler
-  ws.on('message', function incoming(message) {
+  webSocket.on('message', function incoming(message) {
     console.log('received: %s', message);
   });
 });
 
 // broadcasting to everyone
 broadcast = function broadcast(data) {
-  wss.clients.forEach(function each(client) {
+  webSocketServer.clients.forEach(function each(client) {
     if (client.readyState === WebSocket.OPEN) {
       client.send(data);
     }
   });
 };
 
-setInterval( () => {broadcast("hi")}, 1000);
-
-
+// setInterval( () => {broadcast("hi")}, 1000);
 
 
 // use pings to handle dropped connections. The websocket spec dictates that all clients should respond to pings with a pong, so we don't need to implement anything in our client for this to work.
-function heartbeat() {
-  this.isAlive = true;
+function detectDrops(webSocketServer) {
+  function heartbeat() {
+    this.isAlive = true;
+  }
+  
+  webSocketServer.on('connection', (webSocket) => {
+    webSocket.isAlive = true;
+    webSocket.on('pong', heartbeat);
+  });
+  
+  const interval = setInterval(function ping() {
+    console.log("pinging");
+    webSocketServer.clients.forEach( (webSocket) => {
+      if (webSocket.isAlive === false) {
+        console.log("Connection with " + webSocket + "lost, terminating.");
+        return webSocket.terminate();
+      }
+  
+      webSocket.isAlive = false;
+      webSocket.ping(() => { });
+    });
+  }, 30000);  
 }
 
-wss.on('connection', function connection(ws) {
-  ws.isAlive = true;
-  ws.on('pong', heartbeat);
-});
-
-const interval = setInterval(function ping() {
-  wss.clients.forEach(function each(ws) {
-    if (ws.isAlive === false) {
-      console.log("Connection with " + ws + "lost, terminating.");
-      return ws.terminate();
-    }
-
-    ws.isAlive = false;
-    ws.ping(() => { });
-  });
-}, 30000);
-
+detectDrops(webSocketServer);
 
 // run the server
 server.listen(process.env.SERVERPORT, () => {
