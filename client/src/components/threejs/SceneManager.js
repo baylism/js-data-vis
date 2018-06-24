@@ -80,7 +80,8 @@ export default canvas => {
 
         controls.enableDamping = true; // an animation loop is required when either damping or auto-rotation are enabled
 
-        controls.dampingFactor = 0.25;
+        controls.dampingFactor = 0.25; // friction
+        controls.rotateSpeed = 0.2; // mouse sensitivity
         controls.screenSpacePanning = false;
         controls.minDistance = 2;
         controls.maxDistance = 1000;
