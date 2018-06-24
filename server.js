@@ -5,7 +5,7 @@
  */
 
 
- // ================== Imports ==================
+// ================== Imports ==================
 const express = require('express');
 const http = require('http');
 const WebSocket = require('ws');
@@ -29,8 +29,8 @@ const webSocketServer = new WebSocket.Server({ server });
 
 
 
-// ================== Websocket Handler Definition ==================
-function buildLifecycleHandlers(webSocket) {
+// ================== Websocket Handler Definitions ==================
+function handleLifecycle(webSocket) {
   webSocket.on('error', (error) => {
     console.log("Websocket connection error: " + error);
   });
@@ -40,63 +40,73 @@ function buildLifecycleHandlers(webSocket) {
   });
 }
 
-// ================== Handler Binding ==================
-// connection with a client established
-webSocketServer.on('connection', (webSocket) => {
+// STRATEGY: use pings to handle dropped connections. The websocket spec dictates that all clients should respond to pings with a pong, so we don't need to implement anything in our client for this to work.
+function detectDrops(webSocketServer) {
+  function heartbeat() {
+    this.isAlive = true;
+  }
 
-  buildLifecycleHandlers(webSocket);
+  webSocketServer.on('connection', (webSocket) => {
+    webSocket.isAlive = true;
+    webSocket.on('pong', heartbeat);
+  });
 
-  // try sending a message immediately after connection opened
+  const interval = setInterval(function ping() {
+    console.log("Pinging all clients to detect dropped connections");
+    webSocketServer.clients.forEach((webSocket) => {
+      if (webSocket.isAlive === false) {
+        console.log("Connection with " + webSocket + "lost, terminating.");
+        return webSocket.terminate();
+      }
+
+      webSocket.isAlive = false;
+      webSocket.ping(() => { });
+    });
+  }, 30000);
+}
+
+function sendMessage(webSocket) {
   webSocket.send('something', (error) => {
     if (! typeof error === "undefined") {
       console.log("Error sending message " + error);
     }
   });
+}
 
-  // message handler
-  webSocket.on('message', function incoming(message) {
+function logReceived(webSocket) {
+  webSocket.on('message', (message) => {
     console.log('received: %s', message);
   });
-});
+}
 
-// broadcasting to everyone
-broadcast = function broadcast(data) {
-  webSocketServer.clients.forEach(function each(client) {
+function broadcastAll(webSocketServer, message) {
+  webSocketServer.clients.forEach( (client) => {
     if (client.readyState === WebSocket.OPEN) {
       client.send(data);
     }
   });
-};
+}
+
+// ================== Handler Binding ==================
+
+detectDrops(webSocketServer);
+
+// connection with a client established
+webSocketServer.on('connection', (webSocket) => {
+
+  handleLifecycle(webSocket);
+  logReceived(webSocket);
+
+});
+
 
 // setInterval( () => {broadcast("hi")}, 1000);
 
 
-// use pings to handle dropped connections. The websocket spec dictates that all clients should respond to pings with a pong, so we don't need to implement anything in our client for this to work.
-function detectDrops(webSocketServer) {
-  function heartbeat() {
-    this.isAlive = true;
-  }
-  
-  webSocketServer.on('connection', (webSocket) => {
-    webSocket.isAlive = true;
-    webSocket.on('pong', heartbeat);
-  });
-  
-  const interval = setInterval(function ping() {
-    console.log("pinging");
-    webSocketServer.clients.forEach( (webSocket) => {
-      if (webSocket.isAlive === false) {
-        console.log("Connection with " + webSocket + "lost, terminating.");
-        return webSocket.terminate();
-      }
-  
-      webSocket.isAlive = false;
-      webSocket.ping(() => { });
-    });
-  }, 30000);  
-}
 
-detectDrops(webSocketServer);
+
+
+
 
 // run the server
 server.listen(process.env.SERVERPORT, () => {
